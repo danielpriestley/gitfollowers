@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ErrorMessage: String {
+enum GFError: String, Error {
     // these are RAW Values, they all conform to one type, an associated value would have the type declared on the respective lines
     case invalidUsername = "This username created an invalid request. Please try again."
     case unableToComplete = "Unable to complete your request. Please check your internet connection"
