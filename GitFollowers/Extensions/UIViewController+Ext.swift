@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 fileprivate var containerView: UIView! // fileprivate means nothing can access this unless it's in this file, so we can get around the extension limitations
 
@@ -43,6 +44,15 @@ extension UIViewController {
         ])
         
         activityIndicator.startAnimating()
+    }
+    
+    func presentSafariVC(with url: URL) {
+        
+        // initialise safari view controller, set the preferred control colour, and then present with animation
+        let safariVC = SFSafariViewController(url: url)
+        safariVC.modalPresentationStyle = .overFullScreen
+        safariVC.preferredControlTintColor = .systemGreen
+        present(safariVC, animated: true)
     }
     
     func dismissLoadingView() {

@@ -57,8 +57,8 @@ class NetworkManager {
         task.resume()
     }
     
-    func getUser(for username: String, page: Int, completed: @escaping(Result<[Follower], GFError>) -> Void) {
-        let endpoint = baseURL + "\(username)/followers?per_page=100&page=\(page)"
+    func getUserInfo(for username: String, completed: @escaping(Result<User, GFError>) -> Void) {
+        let endpoint = baseURL + "\(username)"
         
         // we are guarding this as we want to ensure we have a valid url
         guard let url = URL(string: endpoint) else {
@@ -86,9 +86,9 @@ class NetworkManager {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 // we are trying to decode an array of followers from the data we have recieved, using the Decodable Follower struct
-                let followers = try decoder.decode([Follower].self, from: data)
+                let user = try decoder.decode(User.self, from: data)
                 // if it reaches this step, followers was successfully decoded, so we call completed with the followers data,
-                completed(.success(followers))
+                completed(.success(user))
             } catch {
                 completed(.failure(.invalidData))
             }

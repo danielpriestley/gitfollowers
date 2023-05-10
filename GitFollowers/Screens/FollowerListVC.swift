@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol FollowerListVCDelegate: AnyObject {
+    func didRequestFollowers(for username: String)
+}
+
 class FollowerListVC: UIViewController {
     
     enum Section {
@@ -42,6 +46,9 @@ class FollowerListVC: UIViewController {
     func configureViewController() {
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
+        
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
+        navigationItem.rightBarButtonItem = addButton
     }
     
     
@@ -62,7 +69,18 @@ class FollowerListVC: UIViewController {
         navigationItem.searchController = searchController
     }
     
+    func configureDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, Follower>(collectionView: collectionView, cellProvider: {(collectionView, indexPath, follower) -> UICollectionViewCell? in
+            // We create our cell, and then we cast it as a FollowerCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FollowerCell.reuseID, for: indexPath) as! FollowerCell
+            // We utilise the .set function we defined in FollowerCell to expect a follower, we can add additional config to this function, such as styling
+            // and that way, we only need 1 line of code at the callsite here.
+            cell.set(follower: follower)
+            return cell
+        })
+    }
     
+    // MARK: getFollowers Logic
     func getFollowers(username: String, page: Int) {
         showLoadingView()
         // The [weak self] here declares that any use of self inside the network manager must be weak
@@ -97,17 +115,6 @@ class FollowerListVC: UIViewController {
         }
     }
     
-    func configureDataSource() {
-        dataSource = UICollectionViewDiffableDataSource<Section, Follower>(collectionView: collectionView, cellProvider: {(collectionView, indexPath, follower) -> UICollectionViewCell? in
-            // We create our cell, and then we cast it as a FollowerCell
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FollowerCell.reuseID, for: indexPath) as! FollowerCell
-            // We utilise the .set function we defined in FollowerCell to expect a follower, we can add additional config to this function, such as styling
-            // and that way, we only need 1 line of code at the callsite here.
-            cell.set(follower: follower)
-            return cell
-        })
-    }
-    
     // We are going to call this function whenever we want the data to reload
     func updateData(on followers: [Follower]) {
         // We have to pass in the section, and the items, and these then get hashed, which is how they are tracked
@@ -119,6 +126,10 @@ class FollowerListVC: UIViewController {
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot, animatingDifferences: true)
         }
+    }
+    
+    @objc func addButtonTapped() {
+        print("Add Button Tapped")
     }
 }
 
@@ -144,6 +155,7 @@ extension FollowerListVC: UICollectionViewDelegate {
         
         let destVC = UserInfoVC()
         destVC.username = follower.login
+        destVC.delegate = self
         let navController = UINavigationController(rootViewController: destVC)
         present(navController, animated: true)
     }
@@ -165,6 +177,25 @@ extension FollowerListVC: UISearchResultsUpdating, UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         isSearching = false
         updateData(on: followers)
+    }
+    
+    
+}
+
+extension FollowerListVC: FollowerListVCDelegate {
+    func didRequestFollowers(for username: String) {
+        self.username = username
+        title = username
+        page = 1
+        followers.removeAll()
+        filteredFollowers.removeAll()
+        
+        getFollowers(username: username, page: page)
+        
+        DispatchQueue.main.async {
+            self.collectionView.setContentOffset(.zero, animated: true)
+            self.collectionView.reloadData()
+        }
     }
     
     
