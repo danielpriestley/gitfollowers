@@ -11,7 +11,7 @@ protocol FollowerListVCDelegate: AnyObject {
     func didRequestFollowers(for username: String)
 }
 
-class FollowerListVC: UIViewController {
+class FollowerListVC: GFDataLoadingVC {
     
     enum Section {
         case main
@@ -25,6 +25,17 @@ class FollowerListVC: UIViewController {
     var page = 1
     var hasMoreFollowers = true
     var isSearching = false
+    
+    init(username: String) {
+        super.init(nibName: nil, bundle: nil)
+        self.username = username
+        title = username
+    }
+    
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
 
     override func viewDidLoad() {
@@ -129,7 +140,30 @@ class FollowerListVC: UIViewController {
     }
     
     @objc func addButtonTapped() {
-        print("Add Button Tapped")
+        showLoadingView()
+        
+        NetworkManager.shared.getUserInfo(for: username) { [weak self] result in
+            guard let self = self else {return}
+            self.dismissLoadingView()
+            
+            switch result {
+            case.success(let user):
+                let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
+                
+                PersistenceManager.updateWith(favorite: favorite, actionType: .add) { [weak self] error in
+                    guard let self = self else {return}
+                    guard let error = error else {
+                        // error was not nil, so we can present a success alert
+                        self.presentGFAlertOnMainThread(title: "Success!", message: "You have successfully favorites this user", buttonTitle: "Hooray")
+                        return
+                    }
+                    
+                    self.presentGFAlertOnMainThread(title: "Something went wrong!", message: error.rawValue, buttonTitle: "Okay")
+                }
+            case.failure(let error):
+                self.presentGFAlertOnMainThread(title: "Something went wrong", message: error.rawValue, buttonTitle: "Okay")
+            }
+        }
     }
 }
 

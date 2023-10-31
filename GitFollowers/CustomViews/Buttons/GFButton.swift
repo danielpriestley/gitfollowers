@@ -21,12 +21,10 @@ class GFButton: UIButton {
         fatalError("init(coder:) has not been implemented")
     }
     
-    init(backgroundColor: UIColor, title: String) {
-        super.init(frame: .zero) // this is zero because we know that we are going to change the height/width with constraints
+    convenience init(backgroundColor: UIColor, title: String) {
+        self.init(frame: .zero) // this is zero because we know that we are going to change the height/width with constraints
         self.backgroundColor = backgroundColor
         self.setTitle(title, for: .normal)
-        configure()
-        
     }
     
     // by making this private, it can only be called within this class

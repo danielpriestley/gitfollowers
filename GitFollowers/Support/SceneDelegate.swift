@@ -17,40 +17,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         window = UIWindow(frame: windowScene.coordinateSpace.bounds)
         window?.windowScene = windowScene
-        window?.rootViewController = createTabBar()
+        window?.rootViewController = GFTabBarController()
         window?.makeKeyAndVisible()
         
         configureNavigationBar()
-    }
-    
-    
-    func createSearchNC() -> UINavigationController {
-        let searchVC = SearchVC()
-        searchVC.title = "Search"
-        searchVC.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 0)
-        
-        return UINavigationController(rootViewController: searchVC)
-    }
-    
-    
-    func createFavouritesNC() -> UINavigationController {
-        let favouritesVC = FavouritesListVC()
-        favouritesVC.title = "Favourites"
-        favouritesVC.tabBarItem = UITabBarItem(tabBarSystemItem: .favorites, tag: 1)
-        
-        return UINavigationController(rootViewController: favouritesVC)
-    }
-    
-    func createTabBar() -> UITabBarController {
-        let tabBar = UITabBarController()
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithDefaultBackground()
-        UITabBar.appearance().tintColor = .systemGreen
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        
-        tabBar.viewControllers = [createSearchNC(), createFavouritesNC()]
-        
-        return tabBar
     }
     
     func configureNavigationBar() {
